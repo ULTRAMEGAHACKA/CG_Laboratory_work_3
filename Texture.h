@@ -52,3 +52,4 @@ private:
 	Magick::Image* m_pImage;
 	Magick::Blob m_blob;
 };
+Texture* pTexture = NULL;
