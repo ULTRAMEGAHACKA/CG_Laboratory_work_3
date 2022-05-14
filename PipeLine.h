@@ -99,7 +99,8 @@ public:
             0.0f, 0.0f, 0.0f, 1.0f); // вокруг X
         glm::mat4x4 RotateTrans = transformMatrixZ * transformMatrixY * transformMatrixX;
         //=========================================
-        const float ar = m_persProj.Width / m_persProj.Height;
+
+        /*const float ar = m_persProj.Width / m_persProj.Height;
         const float zNear = m_persProj.zNear;
         const float zFar = m_persProj.zFar;
         const float zRange = zNear - zFar;
@@ -109,7 +110,51 @@ public:
             0.0f, 1.0f / tanHalfFOV, cosf(x), 0.0f,
             0.0f, 0.0f, (-zNear - zFar) / zRange, 1.0f,
             0.0f, 0.0f, 2.0f * zFar * zNear / zRange, 0.0f);
-        //=========================================
+       
+        glm::vec3 N = m_camera.Target;
+        Normalize(N);
+        glm::vec3 U = m_camera.Up;
+        Normalize(U);
+        U = Cross(m_camera.Target, U);
+        glm::vec3 V = Cross(U, N);
+
+        glm::mat4 CameraRotateTrans(
+            U.x, V.x, N.x, 0.0f,
+            U.y, V.y, N.y, 0.0f,
+            U.z, V.z, N.z, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+        
+        glm::mat4 CameraTranslationTrans(
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            -m_camera.Pos.x, -m_camera.Pos.y, -m_camera.Pos.z, 1.0f);*/
+        
+
+        m_transformation = TranslationTrans * RotateTrans * ScaleTrans;
+        return &m_transformation;
+    }
+    void SetCamera(const glm::vec3& Pos, const glm::vec3& Target, const glm::vec3& Up)
+    {
+        m_camera.Pos = Pos;
+        m_camera.Target = Target;
+        m_camera.Up = Up;
+    }
+    const glm::mat4x4* GetTransWorld()
+    {
+        //===================
+        GetTrans();
+        const float ar = m_persProj.Width / m_persProj.Height;
+        const float zNear = m_persProj.zNear;
+        const float zFar = m_persProj.zFar;
+        const float zRange = zNear - zFar;
+        const float tanHalfFOV = tanf(glm::radians(m_persProj.FOV / 2.0));
+        glm::mat4x4 ProjectionMatrix(
+            1.0f / (tanHalfFOV * ar), 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f / tanHalfFOV, 0.0f, 0.0f,
+            0.0f, 0.0f, (-zNear - zFar) / zRange, 2.0f * zFar * zNear / zRange,
+            0.0f, 0.0f, 1.0f, 0.0f);
+        //====================
         glm::vec3 N = m_camera.Target; // m_camera.Target, m_camera.Up
         Normalize(N);
         glm::vec3 U = m_camera.Up;
@@ -122,29 +167,34 @@ public:
             U.y, V.y, N.y, 0.0f,
             U.z, V.z, N.z, 0.0f,
             0.0f, 0.0f, 0.0f, 1.0f);
-        //=========================================
+        //====================
         glm::mat4 CameraTranslationTrans(
             1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f,
             -m_camera.Pos.x, -m_camera.Pos.y, -m_camera.Pos.z, 1.0f);
-        //=========================================
+        //====================
 
-        glm::mat4 m_transformation = /*PersProjTrans * CameraRotateTrans * CameraTranslationTrans **/ TranslationTrans * RotateTrans * ScaleTrans;
-        return &m_transformation;
+        worldM = m_transformation * CameraTranslationTrans * CameraRotateTrans * ProjectionMatrix;
+
+        return &worldM;
     }
-    void SetCamera(const glm::vec3& Pos, const glm::vec3& Target, const glm::vec3& Up)
+    glm::mat4x4 InitEdm()
     {
-        m_camera.Pos = Pos;
-        m_camera.Target = Target;
-        m_camera.Up = Up;
+        glm::mat4x4 edm(
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+        return edm;
     }
 
 private:
     glm::vec3 m_scale;
     glm::vec3 m_worldPos;
     glm::vec3 m_rotateInfo;
-
+    glm::mat4x4 m_transformation = InitEdm();
+    glm::mat4x4 worldM = InitEdm();
     struct {
         float FOV;
         float Width;
