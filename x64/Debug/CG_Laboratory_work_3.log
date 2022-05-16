@@ -1,8 +1,13 @@
 ﻿  CG_Laboratory_work_3.cpp
-C:\Users\Delir.DESKTOP-C7SGQLK\source\repos\CG_Laboratory_work_3\CG_Laboratory_work_3\PipeLine.h(151,51): warning C4244: аргумент: преобразование "genType" в "float", возможна потеря данных
+C:\Users\Delir.DESKTOP-C7SGQLK\source\repos\CG_Laboratory_work_3\CG_Laboratory_work_3\PipeLine.h(163,45): warning C4244: аргумент: преобразование "genType" в "float", возможна потеря данных
           with
           [
               genType=double
+          ]
+C:\Users\Delir.DESKTOP-C7SGQLK\source\repos\CG_Laboratory_work_3\CG_Laboratory_work_3\PipeLine.h(169,40): warning C4244: =: преобразование "double" в "T", возможна потеря данных
+          with
+          [
+              T=float
           ]
 C:\DEV\vcpkg\installed\x64-windows\include\Magick++\Drawable.h(478,18): warning C4251: Magick::DrawableBezier::_coordinates: class "std::list<Magick::Coordinate,std::allocator<Magick::Coordinate>>" должен иметь dll-интерфейс для использования клиентами class "Magick::DrawableBezier"
 C:\DEV\vcpkg\installed\x64-windows\include\Magick++\Drawable.h(97): message : см. объявление "std::list<Magick::Coordinate,std::allocator<Magick::Coordinate>>"
@@ -98,5 +103,5 @@ C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.3110
 C:\DEV\vcpkg\installed\x64-windows\include\Magick++\STL.h(1819,17): warning C4251: Magick::x11DisplayImage::_display: class "std::basic_string<char,std::char_traits<char>,std::allocator<char>>" должен иметь dll-интерфейс для использования клиентами class "Magick::x11DisplayImage"
 C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\xstring(4927): message : см. объявление "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
 C:\Users\Delir.DESKTOP-C7SGQLK\source\repos\CG_Laboratory_work_3\CG_Laboratory_work_3\Texture.h(35,84): warning C4244: аргумент: преобразование "double" в "GLint", возможна потеря данных
-C:\Users\Delir.DESKTOP-C7SGQLK\source\repos\CG_Laboratory_work_3\CG_Laboratory_work_3\CG_Laboratory_work_3.cpp(826,34): warning C4267: =: преобразование из "size_t" в "GLint"; возможна потеря данных
+C:\Users\Delir.DESKTOP-C7SGQLK\source\repos\CG_Laboratory_work_3\CG_Laboratory_work_3\CG_Laboratory_work_3.cpp(830,34): warning C4267: =: преобразование из "size_t" в "GLint"; возможна потеря данных
   CG_Laboratory_work_3.vcxproj -> C:\Users\Delir.DESKTOP-C7SGQLK\source\repos\CG_Laboratory_work_3\x64\Debug\CG_Laboratory_work_3.exe

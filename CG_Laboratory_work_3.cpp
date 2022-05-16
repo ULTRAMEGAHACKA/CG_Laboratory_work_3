@@ -212,7 +212,8 @@ struct SpotLight : public PointLight
 		Direction = glm::vec3(0.0f, 0.0f, 0.0f);
 		Cutoff = 0.0f;
 	}
-};
+}; 
+
 Camera GameCamera;
 
 static void SpecialKeyboardCB(int Key, int x, int y)
@@ -483,7 +484,7 @@ public:
 			glUniform1f(spotLights[i].DiffuseIntensity, Lights[i].DiffuseIntensity);
 			glUniform3f(spotLights[i].Position, Lights[i].Position.x, Lights[i].Position.y, Lights[i].Position.z);
 			glm::vec3 Direction = Lights[i].Direction;
-			normalize(Direction);
+			Direction = normalize(Direction);
 			glUniform3f(spotLights[i].Direction, Direction.x, Direction.y, Direction.z);
 			glUniform1f(spotLights[i].Cutoff, cosf(glm::radians(Lights[i].Cutoff)));
 			glUniform1f(spotLights[i].Atten.Constant, Lights[i].Attenuation.Constant);
@@ -642,7 +643,7 @@ public:
 		dirLight.DiffuseIntensity = 0.9f;
 		dirLight.Direction = glm::vec3(0.0f, 0.0, -1.0);
 	}
-	~Main() {
+	~Main() {	
 		delete light;
 		delete pTexture;
 	};
@@ -678,12 +679,12 @@ public:
 		Pipeline p;
 
 		//p.Scale(sinf(scale * 0.1f), sinf(scale * 0.1f), sinf(scale * 0.1f));//sinf(Scale * 0.1f), sinf(Scale * 0.1f), sinf(Scale * 0.1f)
-		p.WorldPos(0.0f, 0.0f, -10.0f);//sinf(Scale)
-		p.Rotate(scale, scale, scale);//sinf(Scale) * 90.0f, sinf(Scale) * 90.0f, sinf(Scale) * 90.0f
-		p.SetPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
+		//p.WorldPos(0.0f, 0.0f, -10.0f);//sinf(Scale)
+		p.Rotate(0.0f, scale, 0.0f);//sinf(Scale) * 90.0f, sinf(Scale) * 90.0f, sinf(Scale) * 90.0f
+		p.SetPerspectiveProj(30.0f, GLUT_WINDOW_WIDTH, GLUT_WINDOW_HEIGHT, 1.0f, 100.0f);
 
 		glm::vec3 CameraPos(0.0f, 0.0f, -3.0f);
-		glm::vec3 CameraTarget(0.0f, 0.0f, 2.0f);
+		glm::vec3 CameraTarget(1.0f, 0.0f, 0.0f);
 		glm::vec3 CameraUp(0.0f, 1.0f, 0.0f);
 
 		p.SetCamera(CameraPos, CameraTarget, CameraUp);
@@ -728,6 +729,7 @@ public:
 		light->SetMatSpecularIntensity(1.0f);
 		light->SetMatSpecularPower(32);
 
+
 		//light->SetPointLights(3, pl);
 
 		glEnableVertexAttribArray(0);
@@ -748,7 +750,8 @@ public:
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
 
-		glutSwapBuffers(); // меняем фоновый буфер и буфер кадра местами
+
+		glutSwapBuffers();
 	}
 	virtual void IdleCB()
 	{
@@ -778,6 +781,7 @@ public:
 			break;
 		}
 	}
+
 
 };
 
@@ -874,7 +878,7 @@ int main(int argc, char** argv)
 {
 	GLUTBackendInit(argc, argv);
 
-	if (!GLUTBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Window")) {
+	if (!GLUTBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "LABA 3")) {
 		return 1;
 	}
 
@@ -888,5 +892,4 @@ int main(int argc, char** argv)
 
 	return 0;
 }
-
 

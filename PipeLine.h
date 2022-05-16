@@ -13,32 +13,25 @@ using namespace std;
 class Pipeline
 {
 public:
-    Pipeline()
-    {
-        m_scale = glm::vec3(1.0f, 1.0f, 1.0f);
-        m_worldPos = glm::vec3(0.0f, 0.0f, 0.0f);
-        m_rotateInfo = glm::vec3(0.0f, 0.0f, 0.0f);
+    Pipeline() {
+        m_scale = { 1.0f, 1.0f, 1.0f };
+        m_trans = { 0.0f, 0.0f, 0.0f };
+        m_rot = { 0.0f, 0.0f, 0.0f };
     }
 
     void Scale(float ScaleX, float ScaleY, float ScaleZ)
     {
-        m_scale.x = ScaleX;
-        m_scale.y = ScaleY;
-        m_scale.z = ScaleZ;
+        m_scale = { ScaleX, ScaleY, ScaleZ };
     }
 
     void WorldPos(float x, float y, float z)
     {
-        m_worldPos.x = x;
-        m_worldPos.y = y;
-        m_worldPos.z = z;
+        m_trans = { x, y, z };
     }
 
     void Rotate(float RotateX, float RotateY, float RotateZ)
     {
-        m_rotateInfo.x = RotateX;
-        m_rotateInfo.y = RotateY;
-        m_rotateInfo.z = RotateZ;
+        m_rot = { RotateX, RotateY, RotateZ };
     }
     void SetPerspectiveProj(float FOV, float Width, float Height, float zNear, float zFar)
     {
@@ -48,136 +41,30 @@ public:
         m_persProj.zNear = zNear;
         m_persProj.zFar = zFar;
     }
-    void Normalize(glm::vec3 vector)
-    {
-        const float Length = sqrtf(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
-        vector.x /= Length;
-        vector.y /= Length;
-        vector.z /= Length;
-    }
-    glm::vec3 Cross(const glm::vec3& v1, glm::vec3 v2) const
-    {
-        const float _x = v2.y * v1.z - v2.z * v1.y;
-        const float _y = v2.z * v1.x - v2.x * v1.z;
-        const float _z = v2.x * v1.y - v2.y * v1.x;
-
-        return glm::vec3(_x, _y, _z);
+    
+    void SetCamera(glm::vec3 pos, glm::vec3 target, glm::vec3 up) {
+        m_camera.Pos = pos;
+        m_camera.Target = target;
+        m_camera.Up = up;
     }
     const glm::mat4* GetTrans()
     {
-        //=========================================
-        glm::mat4 ScaleTrans(
-            sinf(m_scale.x), 0.0f, 0.0f, 0.0f,
-            0.0f, sinf(m_scale.y), 0.0f, 0.0f,
-            0.0f, 0.0f, sinf(m_scale.z), 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f); // размер
-        //=========================================
-        glm::mat4 TranslationTrans(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            m_worldPos.x, m_worldPos.y, m_worldPos.z, 1.0f); // положение
-        //=========================================
-        const float x = glm::radians(m_rotateInfo.x);
-        const float y = glm::radians(m_rotateInfo.y);
-        const float z = glm::radians(m_rotateInfo.z);
+        InitScaleTransform();
+        InitRotateTransform();
+        InitTranslationMatrix();
 
-        glm::mat4x4 transformMatrixZ(
-            cosf(z), -sinf(z), 0.0f, 0.0f,
-            sinf(z), cosf(z), 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f); //вокруг Z
-        glm::mat4x4 transformMatrixY(
-            cosf(y), 0.0f, -sinf(x), 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            sinf(x), 0.0f, cosf(y), 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f); //вокруг Y
-        glm::mat4x4 transformMatrixX(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, cosf(x), -sinf(x), 0.0f,
-            0.0f, sinf(x), cosf(x), 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f); // вокруг X
-        glm::mat4x4 RotateTrans = transformMatrixZ * transformMatrixY * transformMatrixX;
-        //=========================================
-
-        /*const float ar = m_persProj.Width / m_persProj.Height;
-        const float zNear = m_persProj.zNear;
-        const float zFar = m_persProj.zFar;
-        const float zRange = zNear - zFar;
-        const float tanHalfFOV = tanf(glm::radians(m_persProj.FOV / 2.0));
-        glm::mat4 PersProjTrans(
-            1.0f / (tanHalfFOV * ar), cosf(x), sinf(x), 0.0f,
-            0.0f, 1.0f / tanHalfFOV, cosf(x), 0.0f,
-            0.0f, 0.0f, (-zNear - zFar) / zRange, 1.0f,
-            0.0f, 0.0f, 2.0f * zFar * zNear / zRange, 0.0f);
-       
-        glm::vec3 N = m_camera.Target;
-        Normalize(N);
-        glm::vec3 U = m_camera.Up;
-        Normalize(U);
-        U = Cross(m_camera.Target, U);
-        glm::vec3 V = Cross(U, N);
-
-        glm::mat4 CameraRotateTrans(
-            U.x, V.x, N.x, 0.0f,
-            U.y, V.y, N.y, 0.0f,
-            U.z, V.z, N.z, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f);
-        
-        glm::mat4 CameraTranslationTrans(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            -m_camera.Pos.x, -m_camera.Pos.y, -m_camera.Pos.z, 1.0f);*/
-        
-
-        m_transformation = TranslationTrans * RotateTrans * ScaleTrans;
-        return &m_transformation;
-    }
-    void SetCamera(const glm::vec3& Pos, const glm::vec3& Target, const glm::vec3& Up)
-    {
-        m_camera.Pos = Pos;
-        m_camera.Target = Target;
-        m_camera.Up = Up;
+        WVP = ScaleMat * RotateMat * TransMat;
+        return &WVP;
     }
     const glm::mat4x4* GetTransWorld()
     {
-        //===================
         GetTrans();
-        const float ar = m_persProj.Width / m_persProj.Height;
-        const float zNear = m_persProj.zNear;
-        const float zFar = m_persProj.zFar;
-        const float zRange = zNear - zFar;
-        const float tanHalfFOV = tanf(glm::radians(m_persProj.FOV / 2.0));
-        glm::mat4x4 ProjectionMatrix(
-            1.0f / (tanHalfFOV * ar), 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f / tanHalfFOV, 0.0f, 0.0f,
-            0.0f, 0.0f, (-zNear - zFar) / zRange, 2.0f * zFar * zNear / zRange,
-            0.0f, 0.0f, 1.0f, 0.0f);
-        //====================
-        glm::vec3 N = m_camera.Target; // m_camera.Target, m_camera.Up
-        Normalize(N);
-        glm::vec3 U = m_camera.Up;
-        Normalize(U);
-        U = Cross(m_camera.Target, U);// N вместо таргета
-        glm::vec3 V = Cross(U, N);
+        InitPerspective();
+        InitCamera();
+        InitCamTrans();
 
-        glm::mat4 CameraRotateTrans(
-            U.x, V.x, N.x, 0.0f,
-            U.y, V.y, N.y, 0.0f,
-            U.z, V.z, N.z, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f);
-        //====================
-        glm::mat4 CameraTranslationTrans(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            -m_camera.Pos.x, -m_camera.Pos.y, -m_camera.Pos.z, 1.0f);
-        //====================
-
-        worldM = m_transformation * CameraTranslationTrans * CameraRotateTrans * ProjectionMatrix;
-
-        return &worldM;
+        World = WVP * CamTrans * Cam * Proj;
+        return &World;
     }
     glm::mat4x4 InitEdm()
     {
@@ -190,23 +77,119 @@ public:
     }
 
 private:
-    glm::vec3 m_scale;
     glm::vec3 m_worldPos;
     glm::vec3 m_rotateInfo;
     glm::mat4x4 m_transformation = InitEdm();
     glm::mat4x4 worldM = InitEdm();
-    struct {
+    struct persProj {
         float FOV;
         float Width;
         float Height;
         float zNear;
         float zFar;
-    } m_persProj;
-    struct {
+    };
+    struct camera {
         glm::vec3 Pos;
         glm::vec3 Target;
         glm::vec3 Up;
-    } m_camera;
+    };
+    glm::mat4 matrix = {
+        matrix[0][0] = 1.0f, matrix[0][1] = 0.0f, matrix[0][2] = 0.0f, matrix[0][3] = 0.0f,
+        matrix[1][0] = 0.0f, matrix[1][1] = 1.0f, matrix[1][2] = 0.0f, matrix[1][3] = 0.0f,
+        matrix[2][0] = 0.0f, matrix[2][1] = 0.0f, matrix[2][2] = 1.0f, matrix[2][3] = 0.0f,
+        matrix[3][0] = 0.0f, matrix[3][1] = 0.0f, matrix[3][2] = 0.0f, matrix[3][3] = 1.0f,
+    };
+    glm::mat4 ScaleMat = matrix, RotateMat = matrix, TransMat = matrix, Proj = matrix, Cam = matrix, CamTrans = matrix;
+    glm::vec3 m_scale, m_trans, m_rot;
+    persProj m_persProj;
+    camera m_camera;
+    glm::mat4 WVP = matrix;
+    glm::mat4 World = matrix;
+
+    glm::vec3 cross(glm::vec3 v1, glm::vec3 v2) {
+        float x = v1.y * v2.z - v1.z * v2.y;
+        float y = v1.z * v2.x - v1.x * v2.z;
+        float z = v1.x * v2.y - v1.y * v2.x;
+        return glm::vec3(x, y, z);
+    }
+
+    void normalize(glm::vec3& v) {
+        float len = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+        v.x /= len;
+        v.y /= len;
+        v.z /= len;
+    }
+
+    void InitScaleTransform() {
+        ScaleMat = matrix;
+        ScaleMat[0][0] = m_scale.x;
+        ScaleMat[1][1] = m_scale.y;
+        ScaleMat[2][2] = m_scale.z;
+    };
+
+    void InitRotateTransform() {
+        glm::mat4 rx, ry, rz;
+        rx = matrix;
+        ry = matrix;
+        rz = matrix;
+        const float x = glm::radians(m_rot.x);
+        const float y = glm::radians(m_rot.y);
+        const float z = glm::radians(m_rot.z);
+
+        rx[1][1] = cosf(x); rx[1][2] = -sinf(x);
+        rx[2][1] = sinf(x); rx[2][2] = cosf(x);
+
+        ry[0][0] = cosf(y); ry[0][2] = -sinf(y);
+        ry[2][0] = sinf(y); ry[2][2] = cosf(y);
+
+        rz[0][0] = cosf(z); rz[0][1] = -sinf(z);
+        rz[1][0] = sinf(z); rz[1][1] = cosf(z);
+
+        RotateMat = rz * ry * rx;
+    };
+
+    void InitTranslationMatrix() {
+        TransMat = matrix;
+        TransMat[0][3] = m_trans.x;
+        TransMat[1][3] = m_trans.y;
+        TransMat[2][3] = m_trans.z;
+    };
+
+    void InitPerspective() {
+        float ar = m_persProj.Width / m_persProj.Height;
+        float zNear = m_persProj.zNear;
+        float zFar = m_persProj.zFar;
+        float zRange = zNear - zFar;
+        float tanHalfFOV = tanf(glm::radians(m_persProj.FOV / 2.0));
+
+        Proj = matrix;
+        Proj[0][0] = 1 / (tanHalfFOV * ar);
+        Proj[1][1] = 1 / tanHalfFOV;
+        Proj[2][2] = (-zNear - zFar) / zRange;
+        Proj[2][3] = 2. * zFar * zNear / zRange;
+        Proj[3][2] = 1.0f;
+        Proj[3][3] = 0.0f;
+    };
+
+    void InitCamera() {
+        glm::vec3 n = m_camera.Target;
+        glm::vec3 u = m_camera.Up;
+        normalize(n);
+        normalize(u);
+        u = cross(u, m_camera.Target);
+        glm::vec3 v = cross(n, u);
+        Cam = matrix;
+        Cam[0][0] = u.x; Cam[0][1] = u.y; Cam[0][2] = u.z;
+        Cam[1][0] = v.x; Cam[1][1] = v.y; Cam[1][2] = v.z;
+        Cam[2][0] = n.x; Cam[2][1] = n.y; Cam[2][2] = n.z;
+    }
+
+    void InitCamTrans() {
+        CamTrans = matrix;
+        CamTrans[0][3] = -m_camera.Pos.x;
+        CamTrans[1][3] = -m_camera.Pos.y;
+        CamTrans[2][3] = -m_camera.Pos.z;
+    }
 };
 
 #endif	/* PIPELINE_H */
